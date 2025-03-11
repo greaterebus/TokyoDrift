@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 permissions:
-  contents: write  # This gives GitHub Actions permission to create a release
+  contents: write  # This allows GitHub Actions to create a release
 
 jobs:
   build:
@@ -64,8 +64,7 @@ jobs:
 
       - name: Upload to CurseForge
         run: |
-          curl -X POST "https://minecraft.curseforge.com/api/projects/YOUR_PROJECT_ID/upload-file" \
+          curl -X POST "https://wow.curseforge.com/api/projects/1217903/upload-file" \
             -H "x-api-key: ${{ secrets.CURSEFORGE_API_KEY }}" \
             -F "file=@build/TokyoDrift-${{ github.ref_name }}.zip" \
-            -F "metadata={\"changelog\": \"New release ${{ github.ref_name }}\", \"releaseType\": \"release\"}" \
-            -F "gameVersions[]=latest"
+            -F "metadata={\"changelog\": \"New release ${{ github.ref_name }}\", \"releaseType\": \"release\", \"gameVersions\": [\"Retail\"]}"
