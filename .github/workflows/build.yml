@@ -67,5 +67,5 @@ jobs:
           curl -X POST "https://wow.curseforge.com/api/projects/1217903/upload-file" \
             -H "X-Api-Token: ${{ secrets.CURSEFORGE_API_KEY }}" \
             -F "file=@build/TokyoDrift-${{ github.ref_name }}.zip" \
-            -F "metadata={\"changelog\": \"New release ${{ github.ref_name }}\", \"releaseType\": \"release\", \"gameVersions\": [517]}"
+            -F "metadata={\"changelog\": \"New release ${{ github.ref_name }}\", \"releaseType\": \"release\", \"gameVersions\": [110100]}"
         
