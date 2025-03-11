@@ -15,8 +15,7 @@ jobs:
       - name: Set up build directory
         run: |
           mkdir -p build/TokyoDrift
-          cp -r * build/TokyoDrift
-          rm -rf build/TokyoDrift/.git build/TokyoDrift/.github
+          rsync -av --exclude=build --exclude=.git --exclude=.github ./ build/TokyoDrift/
 
       - name: Create ZIP archive
         run: |
