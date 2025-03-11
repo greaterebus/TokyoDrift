@@ -1,0 +1,51 @@
+name: Build and Release TokyoDrift Addon
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up build directory
+        run: |
+          mkdir -p build/TokyoDrift
+          cp -r * build/TokyoDrift
+          rm -rf build/TokyoDrift/.git build/TokyoDrift/.github
+
+      - name: Create ZIP archive
+        run: |
+          cd build
+          zip -r TokyoDrift-${{ github.ref_name }}.zip TokyoDrift
+          cd ..
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TokyoDrift-${{ github.ref_name }}
+          path: build/TokyoDrift-${{ github.ref_name }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TokyoDrift-${{ github.ref_name }}
+          path: build
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/TokyoDrift-${{ github.ref_name }}.zip
+          tag_name: ${{ github.ref_name }}
+          name: TokyoDrift ${{ github.ref_name }}
+          body: "Automated release for TokyoDrift version ${{ github.ref_name }}"
+          draft: false
+          prerelease: false

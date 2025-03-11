@@ -1,0 +1,8 @@
+## Interface: 100107  # Adjust for your WoW version
+## Title: Tokyo Drift
+## Author: Great Anubis
+## Version: 1.0
+## Notes: Plays the Tokyo Drift song when mounted with the G-99 Breakneck buff.
+## SavedVariables: TokyoDriftDB
+
+TokyoDrift.lua
