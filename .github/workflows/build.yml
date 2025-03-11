@@ -49,3 +49,21 @@ jobs:
           body: "Automated release for TokyoDrift version ${{ github.ref_name }}"
           draft: false
           prerelease: false
+
+  curseforge_upload:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TokyoDrift-${{ github.ref_name }}
+          path: build
+
+      - name: Upload to CurseForge
+        run: |
+          curl -X POST "https://minecraft.curseforge.com/api/projects/YOUR_PROJECT_ID/upload-file" \
+            -H "x-api-key: ${{ secrets.CURSEFORGE_API_KEY }}" \
+            -F "file=@build/TokyoDrift-${{ github.ref_name }}.zip" \
+            -F "metadata={\"changelog\": \"New release ${{ github.ref_name }}\", \"releaseType\": \"release\"}" \
+            -F "gameVersions[]=latest"
