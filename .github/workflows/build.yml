@@ -62,10 +62,11 @@ jobs:
           name: TokyoDrift-${{ github.ref_name }}
           path: build
 
-      - name: Upload to CurseForge
-        run: |
-          curl -X POST "https://wow.curseforge.com/api/projects/1217903/upload-file" \
-            -H "X-Api-Token: ${{ secrets.CURSEFORGE_API_KEY }}" \
-            -F "file=@build/TokyoDrift-${{ github.ref_name }}.zip" \
-            -F "metadata={\"changelog\": \"New release ${{ github.ref_name }}\", \"releaseType\": \"release\", \"gameVersions\": [2020709689]}"
+      - name: "Upload to CurseForge"
+        uses: itsmeow/curseforge-upload@v3
+        with:
+          file_path: "build/TokyoDrift-${{ github.ref_name }}.zip"
+          game_endpoint: "wow"
+          project_id: "1217903"
+          token: "${{ secrets.CURSEFORGE_API_KEY  }}"
         
