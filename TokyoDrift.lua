@@ -1,25 +1,34 @@
 -- TokyoDrift.lua
 local TokyoDrift = CreateFrame("Frame")
-local MUSIC_FILE = "Interface/AddOns/TokyoDrift/Tokyo.mp3"  -- Ensure correct path to the music file
 local BUFF_NAME = "G-99 Breakneck"
 local soundHandle = nil  -- Track sound handle
-local dropdown
+local channelDropdown
+local songDropdown
+
+-- Available songs
+local SONGS = {
+    ["Tokyo Drift"] = "Interface/AddOns/TokyoDrift/Tokyo.mp3",
+    ["Free Bird"] = "Interface/AddOns/TokyoDrift/FreeBird.mp3"
+}
 
 -- Ensure TokyoDriftDB is a global variable for SavedVariables
-TokyoDriftDB = TokyoDriftDB or { enabled = true, channel = "Master"}
+TokyoDriftDB = TokyoDriftDB or { enabled = true, channel = "Master", song = "Tokyo Drift"}
 
 local function LoadSettings()
     if TokyoDriftDB and type(TokyoDriftDB) == "table" then
         MUSIC_ENABLED = TokyoDriftDB.enabled ~= nil and TokyoDriftDB.enabled or true
         MUSIC_CHANNEL = TokyoDriftDB.channel or "Master"
+        SELECTED_SONG = TokyoDriftDB.song or "Tokyo Drift"
     else
-        TokyoDriftDB = { enabled = true, channel = "Master" }
+        TokyoDriftDB = { enabled = true, channel = "Master", song = "Tokyo Drift" }
+        SELECTED_SONG = "Tokyo Drift"
     end
 end
 
 local function SaveSettings()
     TokyoDriftDB.enabled = MUSIC_ENABLED
     TokyoDriftDB.channel = MUSIC_CHANNEL
+    TokyoDriftDB.song = SELECTED_SONG
 end
 
 local function HasBuff(buffName)
@@ -49,7 +58,8 @@ local function OnEvent(self, event, ...)
     
     if HasBuff(BUFF_NAME) then
         if not soundHandle then  -- Only play if not already playing
-            soundHandle = select(2, PlaySoundFile(MUSIC_FILE, MUSIC_CHANNEL))
+            local musicFile = SONGS[SELECTED_SONG]
+            soundHandle = select(2, PlaySoundFile(musicFile, MUSIC_CHANNEL))
         end
     else
         if soundHandle and type(soundHandle) == "number" then  -- Stop sound if buff is lost
@@ -91,33 +101,79 @@ local function CreateOptionsPanel()
         end
     end)
     
-    dropdown = CreateFrame("Frame", "TokyoDriftChannelDropdown", panel, "UIDropDownMenuTemplate")
-    dropdown:SetPoint("TOPLEFT", checkbox, "BOTTOMLEFT", -16, -10)
+    channelDropdown = CreateFrame("Frame", "TokyoDriftChannelDropdown", panel, "UIDropDownMenuTemplate")
+    channelDropdown:SetPoint("TOPLEFT", checkbox, "BOTTOMLEFT", -16, -10)
     
-    local function OnSelect(self, arg1)
+    local function OnChannelSelect(self, arg1)
         MUSIC_CHANNEL = arg1
         TokyoDriftDB.channel = arg1
         SaveSettings()
-        UIDropDownMenu_SetText(dropdown, "Audio Channel: " .. MUSIC_CHANNEL)
+        UIDropDownMenu_SetText(channelDropdown, "Audio Channel: " .. MUSIC_CHANNEL)
     end
     
-    local function InitializeDropdown(self, level)
+    local function InitializeChannelDropdown(self, level)
         local info = UIDropDownMenu_CreateInfo()
         local channels = { "Master", "SFX", "Music", "Ambience", "Dialog" }
         for _, channel in ipairs(channels) do
             info.text = channel
             info.arg1 = channel
-            info.func = OnSelect
+            info.func = OnChannelSelect
             info.checked = (MUSIC_CHANNEL == channel)
             UIDropDownMenu_AddButton(info, level)
         end
     end
     
-    UIDropDownMenu_Initialize(dropdown, InitializeDropdown)
-    UIDropDownMenu_SetWidth(dropdown, 150)
-    UIDropDownMenu_SetText(dropdown, "Audio Channel: " .. (MUSIC_CHANNEL or "Master"))
+    UIDropDownMenu_Initialize(channelDropdown, InitializeChannelDropdown)
+    UIDropDownMenu_SetWidth(channelDropdown, 150)
+    UIDropDownMenu_SetText(channelDropdown, "Audio Channel: " .. (MUSIC_CHANNEL or "Master"))
+    
+    -- Song selection dropdown
+    songDropdown = CreateFrame("Frame", "TokyoDriftSongDropdown", panel, "UIDropDownMenuTemplate")
+    songDropdown:SetPoint("TOPLEFT", channelDropdown, "BOTTOMLEFT", 0, -20)
+    
+    local function OnSongSelect(self, arg1)
+        SELECTED_SONG = arg1
+        TokyoDriftDB.song = arg1
+        SaveSettings()
+        UIDropDownMenu_SetText(songDropdown, "Song: " .. SELECTED_SONG)
+        
+        -- If currently playing, restart with new song
+        if soundHandle and type(soundHandle) == "number" then
+            StopSound(soundHandle)
+            soundHandle = nil
+            if MUSIC_ENABLED and HasBuff(BUFF_NAME) then
+                local musicFile = SONGS[SELECTED_SONG]
+                soundHandle = select(2, PlaySoundFile(musicFile, MUSIC_CHANNEL))
+            end
+        end
+    end
+    
+    local function InitializeSongDropdown(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+        local songNames = {"Tokyo Drift", "Free Bird"}
+        for _, songName in ipairs(songNames) do
+            info.text = songName
+            info.arg1 = songName
+            info.func = OnSongSelect
+            info.checked = (SELECTED_SONG == songName)
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end
+    
+    UIDropDownMenu_Initialize(songDropdown, InitializeSongDropdown)
+    UIDropDownMenu_SetWidth(songDropdown, 150)
+    UIDropDownMenu_SetText(songDropdown, "Song: " .. (SELECTED_SONG or "Tokyo Drift"))
     
     Settings.RegisterAddOnCategory(Settings.RegisterCanvasLayoutCategory(panel, "Tokyo Drift"))
+    return panel
 end
 
-CreateOptionsPanel()
+local options = CreateOptionsPanel()
+
+local function ToggleSettings()
+    print("Tokyo Called")
+    Settings.OpenToCategory("Tokyo Drift")
+end
+
+SLASH_TOKYO1 = "/tokyo"
+SlashCmdList["TOKYO"] = ToggleSettings

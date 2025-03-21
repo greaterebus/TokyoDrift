@@ -23,6 +23,8 @@
         "UIDropDownMenu_CreateInfo",
         "ReloadUI",
         "MUSIC_ENABLED",
-        "class"
+        "class",
+        "SlashCmdList",
+        "SettingsPanel"
     ]
 }
