@@ -1,4 +1,4 @@
-## Interface: 100107  # Adjust for your WoW version
+## Interface: 110100  # Adjust for your WoW version
 ## Title: Tokyo Drift
 ## Author: Great Anubis
 ## Version: 1.0
